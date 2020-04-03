@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Component
 public class LevelDbUtil {
-    protected Logger logger= LoggerFactory.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private DB db = null;
     @Value("${LevelDB_filePath}")
@@ -52,6 +52,7 @@ public class LevelDbUtil {
 
     /**
      * 基于fastjson的对象序列化
+     *
      * @param obj
      * @return
      */
@@ -63,16 +64,18 @@ public class LevelDbUtil {
 
     /**
      * 基于fastJson的对象反序列化
+     *
      * @param bytes
      * @return
      */
-    private Object  deserializer(byte[] bytes){
-        String str=new String(bytes);
+    private Object deserializer(byte[] bytes) {
+        String str = new String(bytes);
         return JSON.parse(str);
     }
 
     /**
      * 存放数据
+     *
      * @param key
      * @param val
      */
@@ -86,6 +89,7 @@ public class LevelDbUtil {
 
     /**
      * 根据key获取数据
+     *
      * @param key
      * @return
      */
@@ -98,6 +102,20 @@ public class LevelDbUtil {
         }
         return deserializer(val);
     }
+
+    /**
+     * 根据key删除数据
+     *
+     * @param key
+     */
+    public void delete(String key) {
+        try {
+            db.delete(key.getBytes(charset));
+        } catch (Exception e) {
+            logger.error("levelDB delete error", e);
+        }
+    }
+
 
     /**
      * 关闭数据库连接
@@ -115,6 +133,7 @@ public class LevelDbUtil {
 
     /**
      * 获取所有key
+     *
      * @return
      */
     public List<String> getKeys() {
@@ -142,10 +161,11 @@ public class LevelDbUtil {
         }
         return list;
     }
+
     public static void main(String[] args) {
-        LevelDbUtil dbUtil=new LevelDbUtil();
+        LevelDbUtil dbUtil = new LevelDbUtil();
         dbUtil.initLevelDB();
-        dbUtil.put("test","张");
+        dbUtil.put("test", "张");
         System.out.println(dbUtil.get("test").toString());
         System.out.println(dbUtil.getKeys().toString());
         dbUtil.closeDB();
