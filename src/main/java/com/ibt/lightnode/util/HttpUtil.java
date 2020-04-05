@@ -1,6 +1,10 @@
 package com.ibt.lightnode.util;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.ibt.lightnode.pojo.JsonRpcResponse;
+import com.ibt.lightnode.pojo.TransactionReceipt;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +17,7 @@ import org.springframework.stereotype.Component;
  * @CreateTime: 2020-04-03 20:05
  * @Description: Http工具类
  */
-@Component
+//@Component
 public class HttpUtil {
     private Logger logger = LoggerFactory.getLogger(HttpUtil.class);
     /**
@@ -70,5 +74,14 @@ public class HttpUtil {
             }
         }
         return "";
+    }
+
+    public static void main(String[] args) {
+        HttpUtil httpUtil=new HttpUtil();
+        String res=httpUtil.httpGet("http://127.0.0.1:47768/eth_getTransactionReceipt?hash=%220xec1885dc6e756fe1ed92405e837e3c21b8dfd021c5c7a4d987922e27ba77960e%22");
+
+        JsonRpcResponse jsonRpcResponse= JSON.parseObject(res, JsonRpcResponse.class);
+        String strReceipt=JSON.toJSONString(jsonRpcResponse.getResult());
+        TransactionReceipt receipt=JSON.parseObject(strReceipt,TransactionReceipt.class);
     }
 }
