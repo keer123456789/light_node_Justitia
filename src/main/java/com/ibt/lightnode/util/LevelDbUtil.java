@@ -99,6 +99,10 @@ public class LevelDbUtil {
             val = db.get(key.getBytes(charset));
         } catch (Exception e) {
             logger.error("levelDB get error", e);
+            return null;
+        }
+        if (val == null) {
+            return null;
         }
         return deserializer(val);
     }
@@ -162,12 +166,4 @@ public class LevelDbUtil {
         return list;
     }
 
-    public static void main(String[] args) {
-        LevelDbUtil dbUtil = new LevelDbUtil();
-        dbUtil.initLevelDB();
-        dbUtil.put("test", "张");
-        System.out.println(dbUtil.get("test").toString());
-        System.out.println(dbUtil.getKeys().toString());
-        dbUtil.closeDB();
-    }
 }

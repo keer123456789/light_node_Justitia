@@ -7,7 +7,7 @@ import java.util.List;
  * @BelongsPackage: com.ibt.lightnode.pojo
  * @Author: keer
  * @CreateTime: 2020-04-05 14:44
- * @Description:
+ * @Description: eth_getTransactionReceipt接口返回值
  */
 public class TransactionReceipt {
     private String blockHash;
@@ -16,7 +16,7 @@ public class TransactionReceipt {
     private String transactionIndex;
     private String from;
     private String to;
-    private String root;
+    private byte[] root;
     private String status;
     private String cumulativeGasUsed;
     private String logsBloom;
@@ -74,11 +74,11 @@ public class TransactionReceipt {
         this.to = to;
     }
 
-    public String getRoot() {
+    public byte[] getRoot() {
         return root;
     }
 
-    public void setRoot(String root) {
+    public void setRoot(byte[] root) {
         this.root = root;
     }
 

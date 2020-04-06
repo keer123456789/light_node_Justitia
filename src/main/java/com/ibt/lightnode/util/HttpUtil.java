@@ -1,14 +1,21 @@
 package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.ibt.lightnode.pojo.Block;
 import com.ibt.lightnode.pojo.JsonRpcResponse;
+import com.ibt.lightnode.pojo.RpcRequst;
 import com.ibt.lightnode.pojo.TransactionReceipt;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @BelongsProject: lightnode
@@ -17,9 +24,12 @@ import org.springframework.stereotype.Component;
  * @CreateTime: 2020-04-03 20:05
  * @Description: Http工具类
  */
-//@Component
+@Component
 public class HttpUtil {
     private Logger logger = LoggerFactory.getLogger(HttpUtil.class);
+    @Value("${Full_Node}")
+    private String fullNodeUrl;
+
     /**
      * 发起get请求
      *
@@ -27,7 +37,26 @@ public class HttpUtil {
      * @return
      */
     public String httpGet(String url) {
-        Request request = new Request.Builder().url(url).build();
+        return httpGet(url, null);
+    }
+
+    /**
+     * 发送带有参数的get请求
+     *
+     * @param url
+     * @param params
+     * @return
+     */
+    public String httpGet(String url, Map<String, String> params) {
+        HttpUrl.Builder httpBuilder = HttpUrl.parse(url).newBuilder();
+        if (params != null) {
+            for (Map.Entry<String, String> param : params.entrySet()) {
+                httpBuilder.addQueryParameter(param.getKey(), param.getValue());
+            }
+        }
+        Request request = new Request.Builder()
+                .url(httpBuilder.build())
+                .build();
         return execNewCall(request);
     }
 
@@ -58,7 +87,7 @@ public class HttpUtil {
      * @param request
      * @return
      */
-    private  String execNewCall(Request request) {
+    private String execNewCall(Request request) {
         Response response = null;
         try {
             OkHttpClient okHttpClient = new OkHttpClient();
@@ -76,12 +105,68 @@ public class HttpUtil {
         return "";
     }
 
-    public static void main(String[] args) {
-        HttpUtil httpUtil=new HttpUtil();
-        String res=httpUtil.httpGet("http://127.0.0.1:47768/eth_getTransactionReceipt?hash=%220xec1885dc6e756fe1ed92405e837e3c21b8dfd021c5c7a4d987922e27ba77960e%22");
-
-        JsonRpcResponse jsonRpcResponse= JSON.parseObject(res, JsonRpcResponse.class);
-        String strReceipt=JSON.toJSONString(jsonRpcResponse.getResult());
-        TransactionReceipt receipt=JSON.parseObject(strReceipt,TransactionReceipt.class);
+    /**
+     * 通过配置文件中的全节点地址，获取全节点的块高
+     *
+     * @return
+     */
+    public int eth_blockNumber() {
+        String rep = httpGet(fullNodeUrl + "/eth_blockNumber");
+        Gson gson = new Gson();
+        JsonRpcResponse jsonRpcResponse = gson.fromJson(rep, JsonRpcResponse.class);
+        String height = jsonRpcResponse.getResult().toString().substring(2);
+        return Integer.valueOf(height, 16);
     }
+
+    /**
+     * 获得块中的交易个数
+     *
+     * @param number 必须是0x开头16进制的字符串
+     * @return
+     */
+    public String eth_getBlockTransactionCountByNumber(String number) {
+        List list = new ArrayList();
+        list.add(number);
+        RpcRequst rpcRequst = new RpcRequst("/eth_getBlockTransactionCountByNumber", list);
+        String rep = httpPost(fullNodeUrl, rpcRequst);
+        Gson gson = new Gson();
+        JsonRpcResponse jsonRpcResponse = gson.fromJson(rep, JsonRpcResponse.class);
+        return jsonRpcResponse.getResult().toString();
+    }
+
+    /**
+     * 通过块高获取区块
+     *
+     * @param number 必须是0x开头16进制的字符串
+     * @param fullTx
+     * @return
+     */
+    public Block eth_getBlockByNumber(String number, boolean fullTx) {
+        List list = new ArrayList();
+        list.add(number);
+        list.add(fullTx);
+        RpcRequst rpcRequst = new RpcRequst("eth_getBlockByNumber", list);
+        String rep = httpPost(fullNodeUrl, rpcRequst);
+        Gson gson = new Gson();
+        JsonRpcResponse jsonRpcResponse = gson.fromJson(rep, JsonRpcResponse.class);
+        String blockStr = gson.toJson(jsonRpcResponse.getResult());
+        return gson.fromJson(blockStr, Block.class);
+    }
+
+    /**
+     * 通过交易hash获得交易receipt
+     *
+     * @param hash
+     * @return
+     */
+    public TransactionReceipt eth_getTransactionReceipt(String hash) {
+        List list = new ArrayList();
+        list.add(hash);
+        RpcRequst rpcRequst = new RpcRequst("eth_getTransactionReceipt", list);
+        String rep = httpPost(fullNodeUrl, rpcRequst);
+        JsonRpcResponse jsonRpcResponse = JSON.parseObject(rep, JsonRpcResponse.class);
+        String transactionStr = JSON.toJSONString(jsonRpcResponse.getResult());
+        return JSON.parseObject(transactionStr, TransactionReceipt.class);
+    }
+
 }

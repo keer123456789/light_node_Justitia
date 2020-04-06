@@ -10,40 +10,40 @@ import java.util.List;
  * @Description: receipt中的log对象
  */
 public class Log {
-    private String address;
-    private List<String> topics;
-    private Object data;
+    private byte[] address;
+    private List<byte[]> topics;
+    private byte[] data;
     private int blockNumber;
-    private String transactionHash;
+    private byte[] transactionHash;
     private int transactionIndex;
-    private String blockHash;
+    private byte[] blockHash;
     private int logIndex;
     private boolean removed;
 
     public Log() {
     }
 
-    public String getAddress() {
+    public byte[] getAddress() {
         return address;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(byte[] address) {
         this.address = address;
     }
 
-    public List<String> getTopics() {
+    public List<byte[]> getTopics() {
         return topics;
     }
 
-    public void setTopics(List<String> topics) {
+    public void setTopics(List<byte[]> topics) {
         this.topics = topics;
     }
 
-    public Object getData() {
+    public byte[] getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(byte[] data) {
         this.data = data;
     }
 
@@ -55,11 +55,11 @@ public class Log {
         this.blockNumber = blockNumber;
     }
 
-    public String getTransactionHash() {
+    public byte[] getTransactionHash() {
         return transactionHash;
     }
 
-    public void setTransactionHash(String transactionHash) {
+    public void setTransactionHash(byte[] transactionHash) {
         this.transactionHash = transactionHash;
     }
 
@@ -71,11 +71,11 @@ public class Log {
         this.transactionIndex = transactionIndex;
     }
 
-    public String getBlockHash() {
+    public byte[] getBlockHash() {
         return blockHash;
     }
 
-    public void setBlockHash(String blockHash) {
+    public void setBlockHash(byte[] blockHash) {
         this.blockHash = blockHash;
     }
 
