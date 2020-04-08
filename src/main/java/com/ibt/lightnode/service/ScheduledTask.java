@@ -18,7 +18,7 @@ public class ScheduledTask {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    UpdateReceipt updateReceipt;
+    UpdateReceiptService updateReceipt;
 
     /**
      * 每两秒同步一次

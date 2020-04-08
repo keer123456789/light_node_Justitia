@@ -3,7 +3,7 @@ package com.ibt.lightnode.service.implement;
 import com.ibt.lightnode.pojo.Block;
 import com.ibt.lightnode.pojo.Transaction;
 import com.ibt.lightnode.pojo.TransactionReceipt;
-import com.ibt.lightnode.service.UpdateReceipt;
+import com.ibt.lightnode.service.UpdateReceiptService;
 import com.ibt.lightnode.util.HttpUtil;
 import com.ibt.lightnode.util.LevelDbUtil;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
  * @Description:
  */
 @Service
-public class UpdateReceiptImpl implements UpdateReceipt {
+public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     @Value("${Full_Node}")
     private String fullNodeUrl;

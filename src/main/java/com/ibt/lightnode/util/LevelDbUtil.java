@@ -166,4 +166,17 @@ public class LevelDbUtil {
         return list;
     }
 
+    public static void main(String[] args) {
+        //这里查询leveldb中所有的数据
+        LevelDbUtil levelDbUtil=new LevelDbUtil();
+        levelDbUtil.initLevelDB();
+        List<String> list=levelDbUtil.getKeys();
+        System.out.println(list.toString());
+        for(String str:list){
+            System.out.println(str);
+            System.out.println(levelDbUtil.get(str).toString());
+        }
+        levelDbUtil.closeDB();
+    }
+
 }

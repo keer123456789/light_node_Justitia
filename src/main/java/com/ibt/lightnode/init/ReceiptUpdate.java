@@ -1,13 +1,9 @@
 package com.ibt.lightnode.init;
 
-import com.ibt.lightnode.pojo.Block;
-import com.ibt.lightnode.service.UpdateReceipt;
-import com.ibt.lightnode.util.HttpUtil;
-import com.ibt.lightnode.util.LevelDbUtil;
+import com.ibt.lightnode.service.UpdateReceiptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +19,7 @@ public class ReceiptUpdate implements CommandLineRunner {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    UpdateReceipt updateReceipt;
+    UpdateReceiptService updateReceipt;
     @Override
     public void run(String... args) throws Exception {
 
