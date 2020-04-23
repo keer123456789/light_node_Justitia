@@ -12,17 +12,17 @@ import java.util.List;
 public class TransactionReceipt {
     private String blockHash;
     private String blockNumber;
-    private String transactionHash;
+    private byte[] transactionHash;
     private String transactionIndex;
     private String from;
     private String to;
     private byte[] root;
-    private String status;
-    private String cumulativeGasUsed;
-    private String logsBloom;
+    private long status;
+    private long cumulativeGasUsed;
+    private byte[] logsBloom;
     private List<Log> logs;
-    private String contractAddress;
-
+    private byte[] contractAddress;
+    private long gasUsed;
     public TransactionReceipt() {
     }
 
@@ -42,11 +42,11 @@ public class TransactionReceipt {
         this.blockNumber = blockNumber;
     }
 
-    public String getTransactionHash() {
+    public byte[] getTransactionHash() {
         return transactionHash;
     }
 
-    public void setTransactionHash(String transactionHash) {
+    public void setTransactionHash(byte[] transactionHash) {
         this.transactionHash = transactionHash;
     }
 
@@ -82,27 +82,27 @@ public class TransactionReceipt {
         this.root = root;
     }
 
-    public String getStatus() {
+    public long getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        this.status = Long.parseLong(status.substring(2,status.length()),16);
     }
 
-    public String getCumulativeGasUsed() {
+    public long getCumulativeGasUsed() {
         return cumulativeGasUsed;
     }
 
     public void setCumulativeGasUsed(String cumulativeGasUsed) {
-        this.cumulativeGasUsed = cumulativeGasUsed;
+        this.cumulativeGasUsed = Long.parseLong(cumulativeGasUsed.substring(2,cumulativeGasUsed.length()),16);
     }
 
-    public String getLogsBloom() {
+    public byte[] getLogsBloom() {
         return logsBloom;
     }
 
-    public void setLogsBloom(String logsBloom) {
+    public void setLogsBloom(byte[] logsBloom) {
         this.logsBloom = logsBloom;
     }
 
@@ -114,11 +114,20 @@ public class TransactionReceipt {
         this.logs = logs;
     }
 
-    public String getContractAddress() {
+    public byte[] getContractAddress() {
         return contractAddress;
     }
 
     public void setContractAddress(String contractAddress) {
-        this.contractAddress = contractAddress;
+        contractAddress=contractAddress.substring(2);
+        this.contractAddress = contractAddress.getBytes();
+    }
+
+    public long getGasUsed() {
+        return gasUsed;
+    }
+
+    public void setGasUsed(String gasUsed) {
+        this.gasUsed = Long.parseLong(gasUsed.substring(2,gasUsed.length()),16);
     }
 }

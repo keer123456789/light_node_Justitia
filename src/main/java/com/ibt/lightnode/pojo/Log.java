@@ -13,7 +13,7 @@ public class Log {
     private byte[] address;
     private List<byte[]> topics;
     private byte[] data;
-    private int blockNumber;
+    private long blockNumber;
     private byte[] transactionHash;
     private int transactionIndex;
     private byte[] blockHash;
@@ -47,11 +47,11 @@ public class Log {
         this.data = data;
     }
 
-    public int getBlockNumber() {
+    public long getBlockNumber() {
         return blockNumber;
     }
 
-    public void setBlockNumber(int blockNumber) {
+    public void setBlockNumber(long blockNumber) {
         this.blockNumber = blockNumber;
     }
 

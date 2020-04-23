@@ -18,6 +18,7 @@ public class Block {
     private String miner;
     private String timestamp;
     private String transactionsRoot;
+    private String receiptsRoot;
     private List<Transaction> transactions;
     private String gasLimit;
 
@@ -102,5 +103,13 @@ public class Block {
 
     public void setGasLimit(String gasLimit) {
         this.gasLimit = gasLimit;
+    }
+
+    public String getReceiptsRoot() {
+        return receiptsRoot;
+    }
+
+    public void setReceiptsRoot(String receiptsRoot) {
+        this.receiptsRoot = receiptsRoot;
     }
 }

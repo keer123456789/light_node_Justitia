@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -166,16 +167,18 @@ public class LevelDbUtil {
         return list;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
         //这里查询leveldb中所有的数据
         LevelDbUtil levelDbUtil=new LevelDbUtil();
         levelDbUtil.initLevelDB();
         List<String> list=levelDbUtil.getKeys();
+
         System.out.println(list.toString());
         for(String str:list){
             System.out.println(str);
             System.out.println(levelDbUtil.get(str).toString());
         }
+        System.out.println(levelDbUtil.get("LatestBlock").toString());
         levelDbUtil.closeDB();
     }
 

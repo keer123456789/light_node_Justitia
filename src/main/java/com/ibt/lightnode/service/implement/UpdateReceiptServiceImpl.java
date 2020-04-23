@@ -1,16 +1,23 @@
 package com.ibt.lightnode.service.implement;
 
 import com.ibt.lightnode.pojo.Block;
+import com.ibt.lightnode.pojo.Receipt;
 import com.ibt.lightnode.pojo.Transaction;
 import com.ibt.lightnode.pojo.TransactionReceipt;
 import com.ibt.lightnode.service.UpdateReceiptService;
 import com.ibt.lightnode.util.HttpUtil;
 import com.ibt.lightnode.util.LevelDbUtil;
+import com.ibt.lightnode.util.MerkleTrees;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 /**
  * @BelongsProject: lightnode
@@ -34,8 +41,8 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     public int checkBlockHeight() {
         levelDbUtil.initLevelDB();
         String currentBlockHeight = (String) levelDbUtil.get("currentBlockHeight");
-        int currentHeight=0;
-        if(currentBlockHeight!=null){
+        int currentHeight = 0;
+        if (currentBlockHeight != null) {
             String temp = currentBlockHeight.substring(2);
             currentHeight = Integer.valueOf(temp, 16);
         }
@@ -61,19 +68,77 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
             String h = Integer.toHexString(startHeight).toUpperCase();
             String height = "0x" + h;
             Block block = httpUtil.eth_getBlockByNumber(height, true);
+            List<TransactionReceipt> transactionReceiptList = new ArrayList<>();
             for (Transaction transaction : block.getTransactions()) {
                 TransactionReceipt receipt = httpUtil.eth_getTransactionReceipt(transaction.getHash());
-                if(receipt==null){
+                if (receipt == null) {
                     continue;
                 }
-                levelDbUtil.put("currentBlockHeight", height);
-                levelDbUtil.put("receipt" + height + "_" + receipt.getTransactionIndex(), receipt);
+                transactionReceiptList.add(receipt);
+//                levelDbUtil.put("currentBlockHeight", height);
+//                levelDbUtil.put("receipt" + height + "_" + receipt.getTransactionIndex(), receipt);
             }
-            logger.info("同步receipt信息：块号" + height + ",transaction 个数：" + block.getTransactions().size());
+            //TODO 现在计算的hash和receiptroot不同，未能解决；主要是在MerkleTrees这个类中的hash算法是否正确。
+            boolean check = checkReceipt(transactionReceiptList, block.getReceiptsRoot());
+            if (check) {
+                levelDbUtil.put("currentBlockHeight", height);
+                for (TransactionReceipt transactionReceipt : transactionReceiptList) {
+                    levelDbUtil.put("receipt" + height + "_" + transactionReceipt.getTransactionIndex(), transactionReceipt);
+                }
+            } else {
+                // 检查错误，哈市不对，
+                startHeight=startHeight-1;
+            }
+
+
         }
-        logger.info("本次同步完成，当前块高"+levelDbUtil.get("currentBlockHeight").toString());
+        logger.info("本次同步完成，当前块高" + levelDbUtil.get("currentBlockHeight").toString());
         levelDbUtil.closeDB();
     }
 
+    /**
+     * 检查receipt root hash
+     *
+     * @param list
+     * @return
+     */
+    private boolean checkReceipt(List<TransactionReceipt> list, String receiptRoot) {
+        List<Receipt> receipts = translate(list);
+        List<byte[]> hashes = new ArrayList<>();
+        for (Receipt receipt : receipts) {
+            hashes.add(MerkleTrees.getSHA2HexValue(receipt.toString()));
+        }
+        MerkleTrees trees = new MerkleTrees(hashes);
+        String sumRootHash = trees.merkle_tree();
+        receiptRoot = receiptRoot.substring(2);
+        if (receiptRoot.equals(sumRootHash)) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    /**
+     * 将TransactionReceipt 转化为Receipt
+     *
+     * @param transactionReceipts
+     * @return
+     */
+    private List<Receipt> translate(List<TransactionReceipt> transactionReceipts) {
+        List<Receipt> receipts = new ArrayList<>();
+        for (TransactionReceipt transactionReceipt : transactionReceipts) {
+            Receipt receipt = new Receipt(transactionReceipt.getRoot(),
+                    transactionReceipt.getStatus(),
+                    transactionReceipt.getCumulativeGasUsed(),
+                    transactionReceipt.getLogsBloom(),
+                    transactionReceipt.getTransactionHash(),
+                    transactionReceipt.getContractAddress(),
+                    transactionReceipt.getGasUsed(),
+                    transactionReceipt.getLogs());
+            receipts.add(receipt);
+        }
+        return receipts;
+    }
 
 }

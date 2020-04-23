@@ -169,4 +169,9 @@ public class HttpUtil {
         return JSON.parseObject(transactionStr, TransactionReceipt.class);
     }
 
+    public static void main(String[] args) {
+        HttpUtil httpUtil=new HttpUtil();
+        TransactionReceipt receipt=httpUtil.eth_getTransactionReceipt("0xb58e05bd72ae6e2a6e4ad669a789239ab3a24cbaa085fc5ab5213e7269781cff");
+        System.out.println("hahah");
+    }
 }

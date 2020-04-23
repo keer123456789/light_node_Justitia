@@ -20,3 +20,5 @@
 3. 访问浏览器
 增加了查询块高的接口，浏览器访问：[http://127.0.0.1:8080/simple/blockheight](http://127.0.0.1:8080/simple/blockheight)
 即可获得轻节点中同步的块高
+
+
