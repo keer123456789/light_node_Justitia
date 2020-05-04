@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @CreateTime: 2020-04-03 19:37
  * @Description: 同步receipt
  */
-@Component
+//@Component
 public class ReceiptUpdate implements CommandLineRunner {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 

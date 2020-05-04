@@ -2,6 +2,7 @@ package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBFactory;
 import org.iq80.leveldb.DBIterator;
@@ -16,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +31,7 @@ import java.util.Map;
 public class LevelDbUtil {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private DB db = null;
+    private DB db ;
     @Value("${LevelDB_filePath}")
     private String dbFolder;
     private String charset = "utf-8";

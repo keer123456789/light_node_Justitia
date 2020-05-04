@@ -1,23 +1,19 @@
 package com.ibt.lightnode.service.implement;
 
-import com.ibt.lightnode.pojo.Block;
-import com.ibt.lightnode.pojo.Receipt;
-import com.ibt.lightnode.pojo.Transaction;
-import com.ibt.lightnode.pojo.TransactionReceipt;
+import com.ibt.lightnode.pojo.*;
 import com.ibt.lightnode.service.UpdateReceiptService;
+import com.ibt.lightnode.util.EventDataDecodeUtil;
 import com.ibt.lightnode.util.HttpUtil;
 import com.ibt.lightnode.util.LevelDbUtil;
-import com.ibt.lightnode.util.MerkleTrees;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @BelongsProject: lightnode
@@ -36,6 +32,10 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     LevelDbUtil levelDbUtil;
     @Autowired
     HttpUtil httpUtil;
+    @Autowired
+    EventDataDecodeUtil eventDataDecodeUtil;
+    @Value("${traceContrantAddress}")
+    private String traceContrantAddress;
 
     @Override
     public int checkBlockHeight() {
@@ -83,11 +83,22 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
             if (check) {
                 levelDbUtil.put("currentBlockHeight", height);
                 for (TransactionReceipt transactionReceipt : transactionReceiptList) {
-                    levelDbUtil.put("receipt" + height + "_" + transactionReceipt.getTransactionIndex(), transactionReceipt);
+
+                    Log log = transactionReceipt.getLogs().get(0);
+                    String contractAddress = "0x" + eventDataDecodeUtil.binary(log.getAddress(), 16);
+                    if (contractAddress.equals(traceContrantAddress)) {
+                        Map map = eventDataDecodeUtil.decodeReceiptData(log.getData());
+                        for (Object o : map.keySet()) {
+                            String key = (String) o;
+                            key = contractAddress + "_" + key + getEventIndex(contractAddress);
+                            levelDbUtil.put(key, map.get(o));
+                        }
+                        levelDbUtil.put(contractAddress + "_", transactionReceipt);
+                    }
                 }
             } else {
                 // 检查错误，哈市不对，
-                startHeight=startHeight-1;
+                startHeight = startHeight - 1;
             }
 
 
@@ -103,19 +114,20 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
      * @return
      */
     private boolean checkReceipt(List<TransactionReceipt> list, String receiptRoot) {
-        List<Receipt> receipts = translate(list);
-        List<byte[]> hashes = new ArrayList<>();
-        for (Receipt receipt : receipts) {
-            hashes.add(MerkleTrees.getSHA2HexValue(receipt.toString()));
-        }
-        MerkleTrees trees = new MerkleTrees(hashes);
-        String sumRootHash = trees.merkle_tree();
-        receiptRoot = receiptRoot.substring(2);
-        if (receiptRoot.equals(sumRootHash)) {
-            return true;
-        } else {
-            return false;
-        }
+//        List<Receipt> receipts = translate(list);
+//        List<byte[]> hashes = new ArrayList<>();
+//        for (Receipt receipt : receipts) {
+//            hashes.add(MerkleTrees.getSHA2HexValue(receipt.toString()));
+//        }
+//        MerkleTrees trees = new MerkleTrees(hashes);
+//        String sumRootHash = trees.merkle_tree();
+//        receiptRoot = receiptRoot.substring(2);
+//        if (receiptRoot.equals(sumRootHash)) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+        return true;
 
     }
 
@@ -141,4 +153,35 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
         return receipts;
     }
 
+    /**
+     * 获取合约的event编号
+     *
+     * @param contractAddress
+     * @return
+     */
+    private String getEventIndex(String contractAddress) {
+        levelDbUtil.initLevelDB();
+        int index = 0;
+        List<String> keys = levelDbUtil.getKeys();
+        for (String key : keys) {
+            String[] str = key.split("_");
+            if (str[0].equals(contractAddress)) {
+                int value = Integer.parseInt(str[3]);
+                if (value > index) {
+                    index = value;
+                }
+            }
+        }
+        levelDbUtil.closeDB();
+        return index + "";
+    }
+
+    public static void main(String[] args) {
+        String a = "a_1_oo";
+        String[] st = a.split("_");
+        for (int i = 0; i < st.length; i++) {
+            System.out.println(st[i]);
+        }
+
+    }
 }

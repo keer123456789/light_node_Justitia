@@ -2,18 +2,16 @@ package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
-import com.ibt.lightnode.pojo.Block;
-import com.ibt.lightnode.pojo.JsonRpcResponse;
-import com.ibt.lightnode.pojo.RpcRequst;
-import com.ibt.lightnode.pojo.TransactionReceipt;
+import com.ibt.lightnode.pojo.*;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -171,7 +169,29 @@ public class HttpUtil {
 
     public static void main(String[] args) {
         HttpUtil httpUtil=new HttpUtil();
-        TransactionReceipt receipt=httpUtil.eth_getTransactionReceipt("0xb58e05bd72ae6e2a6e4ad669a789239ab3a24cbaa085fc5ab5213e7269781cff");
-        System.out.println("hahah");
+        TransactionReceipt receipt=httpUtil.eth_getTransactionReceipt("0x234fa87fd4a0a3809699f921df23c467591d026c5351965b5980e570dae9b8c4");
+        List logs=receipt.getLogs();
+        Log log= (Log) logs.get(0);
+        String bytes=log.getData();
+
+        final Base64.Decoder decoder = Base64.getDecoder();
+        byte[] event=decoder.decode(bytes);
+        String add="0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B";
+        byte[] function=new byte[32];
+        for(int i=0;i<32;i++){
+            function[i]=event[i+32*2];
+        }
+        String er=binary(function,16);
+        System.out.println(er);
+        System.out.println(er.length());
+        System.out.println(add);
+
+
+
+
     }
+    public static String binary(byte[] bytes, int radix){
+        return new BigInteger(1, bytes).toString(radix);// 这里的1代表正数
+    }
+
 }

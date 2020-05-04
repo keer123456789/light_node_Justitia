@@ -163,6 +163,7 @@ public class MerkleTrees {
         Digest sha3 = new Keccak256();
         return sha3.digest(str.getBytes());
 
+
     }
 
     /**

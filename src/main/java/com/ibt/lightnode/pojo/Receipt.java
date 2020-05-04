@@ -7,7 +7,7 @@ import java.util.List;
  * @BelongsPackage: com.ibt.lightnode.pojo
  * @Author: keer
  * @CreateTime: 2020-04-17 14:56
- * @Description: 计算 receipt hash
+ * @Description: 计算 receipt has，验证使用的
  */
 public class Receipt {
     private byte[] root;

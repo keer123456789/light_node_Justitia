@@ -12,7 +12,7 @@ import java.util.List;
 public class Log {
     private byte[] address;
     private List<byte[]> topics;
-    private byte[] data;
+    private String data;
     private long blockNumber;
     private byte[] transactionHash;
     private int transactionIndex;
@@ -39,11 +39,11 @@ public class Log {
         this.topics = topics;
     }
 
-    public byte[] getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(byte[] data) {
+    public void setData(String data) {
         this.data = data;
     }
 
