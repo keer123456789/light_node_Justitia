@@ -83,19 +83,25 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
             if (check) {
                 levelDbUtil.put("currentBlockHeight", height);
                 for (TransactionReceipt transactionReceipt : transactionReceiptList) {
-
+                    if(transactionReceipt.getLogs()==null){
+                        continue;
+                    }
                     Log log = transactionReceipt.getLogs().get(0);
-                    String contractAddress = "0x" + eventDataDecodeUtil.binary(log.getAddress(), 16);
-                    if (contractAddress.equals(traceContrantAddress)) {
+                    String contractAddress = eventDataDecodeUtil.binary(log.getAddress(), 16);
+                    String tc=traceContrantAddress.substring(2).toLowerCase();
+                    if (contractAddress.equals(tc)) {
                         Map map = eventDataDecodeUtil.decodeReceiptData(log.getData());
                         for (Object o : map.keySet()) {
                             String key = (String) o;
-                            key = contractAddress + "_" + key + getEventIndex(contractAddress);
+                            key = "0x"+contractAddress + "_" + key + getEventIndex(contractAddress);
                             levelDbUtil.put(key, map.get(o));
+                            logger.info(key);
+                            logger.info(map.get(o).toString());
                         }
-                        levelDbUtil.put(contractAddress + "_", transactionReceipt);
+//                        levelDbUtil.put(contractAddress + "_", transactionReceipt);
                     }
                 }
+                logger.info("同步块高："+height);
             } else {
                 // 检查错误，哈市不对，
                 startHeight = startHeight - 1;
@@ -160,7 +166,7 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
      * @return
      */
     private String getEventIndex(String contractAddress) {
-        levelDbUtil.initLevelDB();
+
         int index = 0;
         List<String> keys = levelDbUtil.getKeys();
         for (String key : keys) {
@@ -172,16 +178,13 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
                 }
             }
         }
-        levelDbUtil.closeDB();
         return index + "";
     }
 
     public static void main(String[] args) {
-        String a = "a_1_oo";
-        String[] st = a.split("_");
-        for (int i = 0; i < st.length; i++) {
-            System.out.println(st[i]);
-        }
+        String a="0xCde5c850a0998Cb1B37d7bd2d98340FFe9caaDd5";
+        String b=a.substring(2).toUpperCase();
+        System.out.println(b);
 
     }
 }

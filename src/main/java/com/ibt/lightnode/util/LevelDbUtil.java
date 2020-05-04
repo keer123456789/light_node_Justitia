@@ -2,7 +2,6 @@ package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBFactory;
 import org.iq80.leveldb.DBIterator;
@@ -31,7 +30,7 @@ import java.util.Map;
 public class LevelDbUtil {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private DB db ;
+    private DB db =null;
     @Value("${LevelDB_filePath}")
     private String dbFolder;
     private String charset = "utf-8";
@@ -171,14 +170,10 @@ public class LevelDbUtil {
         //这里查询leveldb中所有的数据
         LevelDbUtil levelDbUtil=new LevelDbUtil();
         levelDbUtil.initLevelDB();
-        List<String> list=levelDbUtil.getKeys();
-
-        System.out.println(list.toString());
-        for(String str:list){
-            System.out.println(str);
-            System.out.println(levelDbUtil.get(str).toString());
+        List<String> keys=levelDbUtil.getKeys();
+        for(String key:keys){
+            System.out.println(levelDbUtil.get(key).toString());
         }
-        System.out.println(levelDbUtil.get("LatestBlock").toString());
         levelDbUtil.closeDB();
     }
 

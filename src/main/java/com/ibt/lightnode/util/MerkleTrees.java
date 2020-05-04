@@ -1,10 +1,7 @@
 package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.Gson;
-import com.ibt.lightnode.pojo.Block;
 import com.ibt.lightnode.pojo.Receipt;
-import com.ibt.lightnode.pojo.Transaction;
 import com.ibt.lightnode.pojo.TransactionReceipt;
 import fr.cryptohash.Digest;
 import fr.cryptohash.Keccak256;
@@ -43,7 +40,7 @@ public class MerkleTrees {
         }
 
         if (hashes.size() == 1) {
-            this.root=new MerkleTreeNode(hashes.get(0));
+            this.root = new MerkleTreeNode(hashes.get(0));
             StringBuilder sb = new StringBuilder(2 * hashes.get(0).length);
             for (byte b : hashes.get(0)) {
                 sb.append(String.format("%02x", b & 0xff));
@@ -89,6 +86,7 @@ public class MerkleTrees {
 
     /**
      * 计算下一层的哈希
+     *
      * @param list
      * @return
      */
@@ -124,6 +122,7 @@ public class MerkleTrees {
 
     /**
      * 计算哈希
+     *
      * @param data
      * @return
      */
@@ -191,7 +190,7 @@ public class MerkleTrees {
                         txReceipt.getContractAddress(),
                         txReceipt.getGasUsed(),
                         txReceipt.getLogs());
-        String hash= JSON.toJSONString(receipt);
+        String hash = JSON.toJSONString(receipt);
 
         byte[] cipher_byte = getSHA2HexValue(hash);
 
@@ -200,7 +199,6 @@ public class MerkleTrees {
         MerkleTrees trees = new MerkleTrees(list);
         trees.merkle_tree();
         System.out.println(trees.getRoot());
-
 
 
     }

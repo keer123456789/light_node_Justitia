@@ -1,7 +1,6 @@
 package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.Gson;
 import com.ibt.lightnode.pojo.*;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -66,8 +65,8 @@ public class HttpUtil {
      * @return
      */
     public String httpPost(String url, Object data) {
-        Gson gson = new Gson();
-        String json = gson.toJson(data);
+
+        String json = JSON.toJSONString(data);
         RequestBody requestBody = RequestBody.create(json, MediaType.parse("application/json;charset=utf-8"));
 
         Request request = new Request.Builder()
@@ -110,8 +109,7 @@ public class HttpUtil {
      */
     public int eth_blockNumber() {
         String rep = httpGet(fullNodeUrl + "/eth_blockNumber");
-        Gson gson = new Gson();
-        JsonRpcResponse jsonRpcResponse = gson.fromJson(rep, JsonRpcResponse.class);
+        JsonRpcResponse jsonRpcResponse = JSON.parseObject(rep, JsonRpcResponse.class);
         String height = jsonRpcResponse.getResult().toString().substring(2);
         return Integer.valueOf(height, 16);
     }
@@ -127,8 +125,8 @@ public class HttpUtil {
         list.add(number);
         RpcRequst rpcRequst = new RpcRequst("/eth_getBlockTransactionCountByNumber", list);
         String rep = httpPost(fullNodeUrl, rpcRequst);
-        Gson gson = new Gson();
-        JsonRpcResponse jsonRpcResponse = gson.fromJson(rep, JsonRpcResponse.class);
+
+        JsonRpcResponse jsonRpcResponse = JSON.parseObject(rep, JsonRpcResponse.class);
         return jsonRpcResponse.getResult().toString();
     }
 
@@ -145,10 +143,10 @@ public class HttpUtil {
         list.add(fullTx);
         RpcRequst rpcRequst = new RpcRequst("eth_getBlockByNumber", list);
         String rep = httpPost(fullNodeUrl, rpcRequst);
-        Gson gson = new Gson();
-        JsonRpcResponse jsonRpcResponse = gson.fromJson(rep, JsonRpcResponse.class);
-        String blockStr = gson.toJson(jsonRpcResponse.getResult());
-        return gson.fromJson(blockStr, Block.class);
+
+        JsonRpcResponse jsonRpcResponse =JSON.parseObject(rep, JsonRpcResponse.class);
+        String blockStr = JSON.toJSONString(jsonRpcResponse.getResult());
+        return JSON.parseObject(blockStr, Block.class);
     }
 
     /**
