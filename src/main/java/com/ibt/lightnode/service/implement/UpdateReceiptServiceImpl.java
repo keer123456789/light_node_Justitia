@@ -1,10 +1,10 @@
 package com.ibt.lightnode.service.implement;
 
+import com.ibt.lightnode.dao.LevelDbTemplete;
 import com.ibt.lightnode.pojo.*;
 import com.ibt.lightnode.service.UpdateReceiptService;
 import com.ibt.lightnode.util.EventDataDecodeUtil;
 import com.ibt.lightnode.util.HttpUtil;
-import com.ibt.lightnode.util.LevelDbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     private String fullNodeUrl;
 
     @Autowired
-    LevelDbUtil levelDbUtil;
+    LevelDbTemplete levelDbTemplete;
     @Autowired
     HttpUtil httpUtil;
     @Autowired
@@ -39,8 +39,8 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
 
     @Override
     public int checkBlockHeight() {
-        levelDbUtil.initLevelDB();
-        String currentBlockHeight = (String) levelDbUtil.get("currentBlockHeight");
+        levelDbTemplete.initLevelDB();
+        String currentBlockHeight = (String) levelDbTemplete.get("currentBlockHeight");
         int currentHeight = 0;
         if (currentBlockHeight != null) {
             String temp = currentBlockHeight.substring(2);
@@ -51,11 +51,11 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
         int remoteHeight = httpUtil.eth_blockNumber();
 
         if (currentHeight > remoteHeight || currentHeight == 0 || currentBlockHeight == null) {
-            levelDbUtil.put("currentBlockHeight", "0x0");
-            levelDbUtil.closeDB();
+            levelDbTemplete.put("currentBlockHeight", "0x0");
+            levelDbTemplete.closeDB();
             return 0;
         } else {
-            levelDbUtil.closeDB();
+            levelDbTemplete.closeDB();
             return currentHeight + 1;
         }
     }
@@ -63,45 +63,20 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     @Override
     public void updateReceipt(int startHeight) {
         int remoteHeight = httpUtil.eth_blockNumber();
-        levelDbUtil.initLevelDB();
+        levelDbTemplete.initLevelDB();
         for (; startHeight <= remoteHeight; startHeight++) {
-            String h = Integer.toHexString(startHeight).toUpperCase();
-            String height = "0x" + h;
-            Block block = httpUtil.eth_getBlockByNumber(height, true);
-            List<TransactionReceipt> transactionReceiptList = new ArrayList<>();
-            for (Transaction transaction : block.getTransactions()) {
-                TransactionReceipt receipt = httpUtil.eth_getTransactionReceipt(transaction.getHash());
-                if (receipt == null) {
-                    continue;
-                }
-                transactionReceiptList.add(receipt);
-//                levelDbUtil.put("currentBlockHeight", height);
-//                levelDbUtil.put("receipt" + height + "_" + receipt.getTransactionIndex(), receipt);
-            }
+            String height = "0x" + Integer.toHexString(startHeight).toUpperCase();
+            Map map = httpUtil.getTransactionReceiptByHeight(height);
+
+            List<TransactionReceipt> transactionReceiptList = (List<TransactionReceipt>) map.get("transcationReceipts");
+            String receiptRoot = (String) map.get("receiptRoot");
+
             //TODO 现在计算的hash和receiptroot不同，未能解决；主要是在MerkleTrees这个类中的hash算法是否正确。
-            boolean check = checkReceipt(transactionReceiptList, block.getReceiptsRoot());
+            boolean check = checkReceipt(transactionReceiptList, receiptRoot);
             if (check) {
-                levelDbUtil.put("currentBlockHeight", height);
-                for (TransactionReceipt transactionReceipt : transactionReceiptList) {
-                    if(transactionReceipt.getLogs()==null){
-                        continue;
-                    }
-                    Log log = transactionReceipt.getLogs().get(0);
-                    String contractAddress = eventDataDecodeUtil.binary(log.getAddress(), 16);
-                    String tc=traceContrantAddress.substring(2).toLowerCase();
-                    if (contractAddress.equals(tc)) {
-                        Map map = eventDataDecodeUtil.decodeReceiptData(log.getData());
-                        for (Object o : map.keySet()) {
-                            String key = (String) o;
-                            key = "0x"+contractAddress + "_" + key + getEventIndex(contractAddress);
-                            levelDbUtil.put(key, map.get(o));
-                            logger.info(key);
-                            logger.info(map.get(o).toString());
-                        }
-//                        levelDbUtil.put(contractAddress + "_", transactionReceipt);
-                    }
-                }
-                logger.info("同步块高："+height);
+                levelDbTemplete.put("currentBlockHeight", height);
+                addTransactionReceipt(transactionReceiptList);
+                logger.info("同步块高：" + height);
             } else {
                 // 检查错误，哈市不对，
                 startHeight = startHeight - 1;
@@ -109,8 +84,8 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
 
 
         }
-        logger.info("本次同步完成，当前块高" + levelDbUtil.get("currentBlockHeight").toString());
-        levelDbUtil.closeDB();
+        logger.info("本次同步完成，当前块高" + levelDbTemplete.get("currentBlockHeight").toString());
+        levelDbTemplete.closeDB();
     }
 
     /**
@@ -168,22 +143,103 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     private String getEventIndex(String contractAddress) {
 
         int index = 0;
-        List<String> keys = levelDbUtil.getKeys();
+        List<String> keys = levelDbTemplete.getKeys();
         for (String key : keys) {
             String[] str = key.split("_");
             if (str[0].equals(contractAddress)) {
-                int value = Integer.parseInt(str[3]);
+                int value = Integer.parseInt(str[4]);
                 if (value > index) {
                     index = value;
                 }
             }
         }
+        index++;
         return index + "";
     }
 
+    /**
+     * 添加到leveldb中
+     *
+     * @param transactionReceipts 一个块中的Transactioneceipt集合
+     */
+    private void addTransactionReceipt(List<TransactionReceipt> transactionReceipts) {
+        for (TransactionReceipt transactionReceipt : transactionReceipts) {
+            /**
+             * 第一步：判断log是否为null
+             */
+            if (transactionReceipt.getLogs() == null) {
+                continue;
+            }
+
+            /**
+             * 第二步：从transactionReceipt中获取log集合
+             */
+            ArrayList<Log> logs = transactionReceipt.getLogs();
+
+            /**
+             * 第三步：循环对每一个log进行解析
+             *
+             * sum变量，是对id进行存储的中间变量
+             */
+            int sum = -1;
+            for (int i = 0; i < logs.size(); i++) {
+                /**
+                 * 第四步：获取log中的合约地址
+                 */
+                String contractAddress = eventDataDecodeUtil.binary(logs.get(i).getAddress(), 16);
+                String tc = traceContrantAddress.substring(2).toLowerCase();
+                /**
+                 * 第五步：与配置文件中的合约地址进行比较，相同说明需要存入leveldb，
+                 */
+                if (contractAddress.equals(tc)) {
+                    /**
+                     * 第六步： 对log中的data字段进行解码（base64-> abi）
+                     * 返回的map结构：
+                     * {
+                     *     "eventName":事件名称，
+                     *     "事件名称"：事件数据，
+                     *     "id":基类合约中的传入的id
+                     * }
+                     */
+                    Map map = eventDataDecodeUtil.decodeReceiptData(logs.get(i).getData());
+
+                    String eventName = (String) map.get("eventName");
+                    int id = (int) map.get("id");
+                    if (id == -1) {
+                        if (sum == -1) {
+                           continue;
+                        } else {
+                            String key = "0x" + contractAddress + "_" + sum + "_" + eventName;
+                            levelDbTemplete.put(key, map.get(eventName));
+                            logger.info(key);
+                            logger.info(map.get(eventName).toString());
+                        }
+                    } else {
+                        sum = id;
+                        if (i != 0) {
+                           for(int j=0;j<i;j++){
+                               Map map1 = eventDataDecodeUtil.decodeReceiptData(logs.get(j).getData());
+                               String key = "0x" + contractAddress + "_" + sum + "_" + eventName;
+                               levelDbTemplete.put(key, map1.get(eventName));
+                               logger.info(key);
+                               logger.info(map.get(eventName).toString());
+                           }
+                        } else {
+                            String key = "0x" + contractAddress + "_" + sum + "_" + eventName;
+                            levelDbTemplete.put(key, map.get(eventName));
+                            logger.info(key);
+                            logger.info(map.get(eventName).toString());
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) {
-        String a="0xCde5c850a0998Cb1B37d7bd2d98340FFe9caaDd5";
-        String b=a.substring(2).toUpperCase();
+        String a = "0xCde5c850a0998Cb1B37d7bd2d98340FFe9caaDd5";
+        String b = a.substring(2).toUpperCase();
         System.out.println(b);
 
     }

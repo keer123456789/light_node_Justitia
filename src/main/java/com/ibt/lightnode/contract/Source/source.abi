@@ -1,55 +1,5 @@
 [
 	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "ownerPigCount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_breed",
-				"type": "uint256"
-			},
-			{
-				"name": "_weight",
-				"type": "uint256"
-			},
-			{
-				"name": "_age",
-				"type": "uint256"
-			},
-			{
-				"name": "_pigFactory",
-				"type": "uint256"
-			}
-		],
-		"name": "creatPig",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"constant": false,
 		"inputs": [
 			{
@@ -71,6 +21,10 @@
 			{
 				"name": "_pigFactory",
 				"type": "uint256"
+			},
+			{
+				"name": "_state",
+				"type": "uint256"
 			}
 		],
 		"name": "changePigInfo",
@@ -85,22 +39,56 @@
 		"type": "function"
 	},
 	{
-		"constant": true,
+		"constant": false,
 		"inputs": [
+			{
+				"name": "_breed",
+				"type": "uint256"
+			},
+			{
+				"name": "_weight",
+				"type": "uint256"
+			},
+			{
+				"name": "_age",
+				"type": "uint256"
+			},
+			{
+				"name": "_pigFactory",
+				"type": "uint256"
+			},
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "creatPig",
+		"outputs": [
 			{
 				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "pigToOwner",
-		"outputs": [
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
 			{
-				"name": "",
-				"type": "address"
+				"name": "_transfer",
+				"type": "uint256"
+			},
+			{
+				"name": "_remove",
+				"type": "uint256"
 			}
 		],
+		"name": "setStateValue",
+		"outputs": [],
 		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -133,23 +121,13 @@
 			{
 				"name": "_value",
 				"type": "uint256"
-			}
-		],
-		"name": "transfer",
-		"outputs": [
+			},
 			{
-				"name": "",
+				"name": "_state",
 				"type": "uint256"
 			}
 		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [],
-		"name": "test",
+		"name": "transfers",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -301,21 +279,181 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "id",
+				"name": "eventName",
 				"type": "string"
 			},
 			{
 				"indexed": false,
-				"name": "age",
+				"name": "id",
 				"type": "uint256"
 			},
 			{
 				"indexed": false,
-				"name": "name",
-				"type": "string"
+				"name": "state",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "time",
+				"type": "uint256"
 			}
 		],
-		"name": "hello",
+		"name": "create",
 		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "eventName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "state",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "time",
+				"type": "uint256"
+			}
+		],
+		"name": "change",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "eventName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "state",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "time",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "eventName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "state",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "time",
+				"type": "uint256"
+			}
+		],
+		"name": "remove",
+		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getCurrentIndex",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getStateValue",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "ownerPigCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "pigToOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]

@@ -1,4 +1,4 @@
-package com.ibt.lightnode.util;
+package com.ibt.lightnode.dao;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -21,13 +21,13 @@ import java.util.Map;
 
 /**
  * @BelongsProject: lightnode
- * @BelongsPackage: com.ibt.lightnode.util
+ * @BelongsPackage: com.ibt.lightnode.dao
  * @Author: keer
- * @CreateTime: 2020-04-03 21:17
- * @Description: Level db Util 工具类
+ * @CreateTime: 2020-05-06 20:30
+ * @Description:
  */
 @Component
-public class LevelDbUtil {
+public class LevelDbTemplete {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private DB db =null;
@@ -164,17 +164,6 @@ public class LevelDbUtil {
             }
         }
         return list;
-    }
-
-    public static void main(String[] args) throws UnsupportedEncodingException {
-        //这里查询leveldb中所有的数据
-        LevelDbUtil levelDbUtil=new LevelDbUtil();
-        levelDbUtil.initLevelDB();
-        List<String> keys=levelDbUtil.getKeys();
-        for(String key:keys){
-            System.out.println(levelDbUtil.get(key).toString());
-        }
-        levelDbUtil.closeDB();
     }
 
 }

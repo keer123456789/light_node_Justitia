@@ -1,5 +1,6 @@
 package com.ibt.lightnode.pojo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public class TransactionReceipt {
     private long status;
     private long cumulativeGasUsed;
     private byte[] logsBloom;
-    private List<Log> logs;
+    private ArrayList<Log> logs;
     private byte[] contractAddress;
     private long gasUsed;
     public TransactionReceipt() {
@@ -106,11 +107,11 @@ public class TransactionReceipt {
         this.logsBloom = logsBloom;
     }
 
-    public List<Log> getLogs() {
+    public ArrayList<Log> getLogs() {
         return logs;
     }
 
-    public void setLogs(List<Log> logs) {
+    public void setLogs(ArrayList<Log> logs) {
         this.logs = logs;
     }
 

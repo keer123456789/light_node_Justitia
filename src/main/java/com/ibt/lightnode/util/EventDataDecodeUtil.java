@@ -7,6 +7,7 @@ import com.ibt.lightnode.pojo.Log;
 import com.ibt.lightnode.pojo.TransactionReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -27,7 +28,8 @@ import java.util.*;
 public class EventDataDecodeUtil {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    @Value("#{'${base_event_names}'.split(',')}")
+    private List<String> baseEventNames;
     /**
      * 解析receipt中log中的data字段
      *
@@ -64,8 +66,16 @@ public class EventDataDecodeUtil {
                 }
             }
         }
+
         Map res=new HashMap();
         res.put(eventName,map);
+        res.put("id",-1);
+        res.put("eventName",eventName);
+        for(String name:baseEventNames){
+            if(name.equals(eventName)){
+                res.put("id",map.get("id"));
+            }
+        }
         return res;
 
     }
@@ -181,6 +191,7 @@ public class EventDataDecodeUtil {
         String bytes = log.getData();
         Map name = decode.decodeReceiptData(bytes);
         System.out.println(name.toString());
+
 
     }
 }

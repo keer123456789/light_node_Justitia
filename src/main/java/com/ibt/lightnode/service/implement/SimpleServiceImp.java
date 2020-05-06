@@ -1,7 +1,7 @@
 package com.ibt.lightnode.service.implement;
 
+import com.ibt.lightnode.dao.LevelDbTemplete;
 import com.ibt.lightnode.service.SimpleService;
-import com.ibt.lightnode.util.LevelDbUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimpleServiceImp implements SimpleService {
     @Autowired
-    LevelDbUtil levelDbUtil;
+    LevelDbTemplete levelDbTemplete;
 
     @Override
     public String getBlockHeight() {
-        levelDbUtil.initLevelDB();
-        String height= levelDbUtil.get("currentBlockHeight").toString();
-        levelDbUtil.closeDB();
+        levelDbTemplete.initLevelDB();
+        String height= levelDbTemplete.get("currentBlockHeight").toString();
+        levelDbTemplete.closeDB();
         return height;
     }
 }

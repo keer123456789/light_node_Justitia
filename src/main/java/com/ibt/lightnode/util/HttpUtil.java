@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @BelongsProject: lightnode
@@ -144,7 +141,7 @@ public class HttpUtil {
         RpcRequst rpcRequst = new RpcRequst("eth_getBlockByNumber", list);
         String rep = httpPost(fullNodeUrl, rpcRequst);
 
-        JsonRpcResponse jsonRpcResponse =JSON.parseObject(rep, JsonRpcResponse.class);
+        JsonRpcResponse jsonRpcResponse = JSON.parseObject(rep, JsonRpcResponse.class);
         String blockStr = JSON.toJSONString(jsonRpcResponse.getResult());
         return JSON.parseObject(blockStr, Block.class);
     }
@@ -165,30 +162,45 @@ public class HttpUtil {
         return JSON.parseObject(transactionStr, TransactionReceipt.class);
     }
 
+    public Map getTransactionReceiptByHeight(String height) {
+        List<TransactionReceipt> transactionReceiptList = new ArrayList<>();
+        Block block = eth_getBlockByNumber(height, true);
+        for (Transaction transaction : block.getTransactions()) {
+            TransactionReceipt receipt = eth_getTransactionReceipt(transaction.getHash());
+            if (receipt == null) {
+                continue;
+            }
+            transactionReceiptList.add(receipt);
+        }
+        Map map=new HashMap();
+        map.put("receiptRoot",block.getReceiptsRoot());
+        map.put("transcationReceipts",transactionReceiptList);
+        return map;
+    }
+
     public static void main(String[] args) {
-        HttpUtil httpUtil=new HttpUtil();
-        TransactionReceipt receipt=httpUtil.eth_getTransactionReceipt("0x234fa87fd4a0a3809699f921df23c467591d026c5351965b5980e570dae9b8c4");
-        List logs=receipt.getLogs();
-        Log log= (Log) logs.get(0);
-        String bytes=log.getData();
+        HttpUtil httpUtil = new HttpUtil();
+        TransactionReceipt receipt = httpUtil.eth_getTransactionReceipt("0x234fa87fd4a0a3809699f921df23c467591d026c5351965b5980e570dae9b8c4");
+        List logs = receipt.getLogs();
+        Log log = (Log) logs.get(0);
+        String bytes = log.getData();
 
         final Base64.Decoder decoder = Base64.getDecoder();
-        byte[] event=decoder.decode(bytes);
-        String add="0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B";
-        byte[] function=new byte[32];
-        for(int i=0;i<32;i++){
-            function[i]=event[i+32*2];
+        byte[] event = decoder.decode(bytes);
+        String add = "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B";
+        byte[] function = new byte[32];
+        for (int i = 0; i < 32; i++) {
+            function[i] = event[i + 32 * 2];
         }
-        String er=binary(function,16);
+        String er = binary(function, 16);
         System.out.println(er);
         System.out.println(er.length());
         System.out.println(add);
 
 
-
-
     }
-    public static String binary(byte[] bytes, int radix){
+
+    public static String binary(byte[] bytes, int radix) {
         return new BigInteger(1, bytes).toString(radix);// 这里的1代表正数
     }
 
