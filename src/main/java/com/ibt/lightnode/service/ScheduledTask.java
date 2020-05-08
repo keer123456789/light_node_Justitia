@@ -29,4 +29,8 @@ public class ScheduledTask {
         logger.info("开始同步receipt");
         updateReceipt.updateReceipt(startHeight);
     }
+
+    public void checkEventDataInRedis(){
+
+    }
 }

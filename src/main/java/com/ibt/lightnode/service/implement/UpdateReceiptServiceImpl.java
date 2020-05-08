@@ -1,6 +1,9 @@
 package com.ibt.lightnode.service.implement;
 
-import com.ibt.lightnode.dao.LevelDbTemplete;
+import com.ibt.lightnode.dao.BlockDao;
+import com.ibt.lightnode.dao.EventDao;
+import com.ibt.lightnode.util.LevelDbTemplete;
+import com.ibt.lightnode.util.SimpleRedisTemplate;
 import com.ibt.lightnode.pojo.*;
 import com.ibt.lightnode.service.UpdateReceiptService;
 import com.ibt.lightnode.util.EventDataDecodeUtil;
@@ -29,9 +32,14 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     private String fullNodeUrl;
 
     @Autowired
-    LevelDbTemplete levelDbTemplete;
+    BlockDao blockDao;
+
+    @Autowired
+    EventDao eventDao;
+
     @Autowired
     HttpUtil httpUtil;
+
     @Autowired
     EventDataDecodeUtil eventDataDecodeUtil;
     @Value("${traceContrantAddress}")
@@ -39,8 +47,7 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
 
     @Override
     public int checkBlockHeight() {
-        levelDbTemplete.initLevelDB();
-        String currentBlockHeight = (String) levelDbTemplete.get("currentBlockHeight");
+        String currentBlockHeight = (String) blockDao.getBlockHeight();
         int currentHeight = 0;
         if (currentBlockHeight != null) {
             String temp = currentBlockHeight.substring(2);
@@ -51,11 +58,11 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
         int remoteHeight = httpUtil.eth_blockNumber();
 
         if (currentHeight > remoteHeight || currentHeight == 0 || currentBlockHeight == null) {
-            levelDbTemplete.put("currentBlockHeight", "0x0");
-            levelDbTemplete.closeDB();
+            blockDao.setBlockHeight("0x0");
+
             return 0;
         } else {
-            levelDbTemplete.closeDB();
+
             return currentHeight + 1;
         }
     }
@@ -63,7 +70,6 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
     @Override
     public void updateReceipt(int startHeight) {
         int remoteHeight = httpUtil.eth_blockNumber();
-        levelDbTemplete.initLevelDB();
         for (; startHeight <= remoteHeight; startHeight++) {
             String height = "0x" + Integer.toHexString(startHeight).toUpperCase();
             Map map = httpUtil.getTransactionReceiptByHeight(height);
@@ -74,7 +80,7 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
             //TODO 现在计算的hash和receiptroot不同，未能解决；主要是在MerkleTrees这个类中的hash算法是否正确。
             boolean check = checkReceipt(transactionReceiptList, receiptRoot);
             if (check) {
-                levelDbTemplete.put("currentBlockHeight", height);
+                blockDao.setBlockHeight(height);
                 addTransactionReceipt(transactionReceiptList);
                 logger.info("同步块高：" + height);
             } else {
@@ -84,8 +90,7 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
 
 
         }
-        logger.info("本次同步完成，当前块高" + levelDbTemplete.get("currentBlockHeight").toString());
-        levelDbTemplete.closeDB();
+        logger.info("本次同步完成，当前块高" + blockDao.getBlockHeight());
     }
 
     /**
@@ -134,28 +139,6 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
         return receipts;
     }
 
-    /**
-     * 获取合约的event编号
-     *
-     * @param contractAddress
-     * @return
-     */
-    private String getEventIndex(String contractAddress) {
-
-        int index = 0;
-        List<String> keys = levelDbTemplete.getKeys();
-        for (String key : keys) {
-            String[] str = key.split("_");
-            if (str[0].equals(contractAddress)) {
-                int value = Integer.parseInt(str[4]);
-                if (value > index) {
-                    index = value;
-                }
-            }
-        }
-        index++;
-        return index + "";
-    }
 
     /**
      * 添加到leveldb中
@@ -207,26 +190,26 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
                     int id = (int) map.get("id");
                     if (id == -1) {
                         if (sum == -1) {
-                           continue;
+                            continue;
                         } else {
-                            String key = "0x" + contractAddress + "_" + sum + "_" + eventName;
-                            levelDbTemplete.put(key, map.get(eventName));
+                            String key = sum + "_" + eventName;
+                            eventDao.setEventData(key, map.get(eventName));
                             logger.info(key);
                             logger.info(map.get(eventName).toString());
                         }
                     } else {
                         sum = id;
                         if (i != 0) {
-                           for(int j=0;j<i;j++){
-                               Map map1 = eventDataDecodeUtil.decodeReceiptData(logs.get(j).getData());
-                               String key = "0x" + contractAddress + "_" + sum + "_" + eventName;
-                               levelDbTemplete.put(key, map1.get(eventName));
-                               logger.info(key);
-                               logger.info(map.get(eventName).toString());
-                           }
+                            for (int j = 0; j < i; j++) {
+                                Map map1 = eventDataDecodeUtil.decodeReceiptData(logs.get(j).getData());
+                                String key = sum + "_" + eventName;
+                                eventDao.setEventData(key, map1.get(eventName));
+                                logger.info(key);
+                                logger.info(map.get(eventName).toString());
+                            }
                         } else {
-                            String key = "0x" + contractAddress + "_" + sum + "_" + eventName;
-                            levelDbTemplete.put(key, map.get(eventName));
+                            String key = sum + "_" + eventName;
+                            eventDao.setEventData(key, map.get(eventName));
                             logger.info(key);
                             logger.info(map.get(eventName).toString());
                         }

@@ -1,6 +1,6 @@
 package com.ibt.lightnode.service.implement;
 
-import com.ibt.lightnode.dao.LevelDbTemplete;
+import com.ibt.lightnode.util.LevelDbTemplete;
 import com.ibt.lightnode.service.SimpleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.ibt.lightnode.dao;
+package com.ibt.lightnode.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -10,6 +10,8 @@ import org.iq80.leveldb.impl.Iq80DBFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -30,7 +32,7 @@ import java.util.Map;
 public class LevelDbTemplete {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private DB db =null;
+    private DB db = null;
     @Value("${LevelDB_filePath}")
     private String dbFolder;
     private String charset = "utf-8";
@@ -79,12 +81,15 @@ public class LevelDbTemplete {
      * @param key
      * @param val
      */
+
     public void put(String key, Object val) {
+        initLevelDB();
         try {
             this.db.put(key.getBytes(charset), this.serializer(val));
         } catch (UnsupportedEncodingException e) {
             logger.error("编码转化异常", e);
         }
+        closeDB();
     }
 
     /**
@@ -94,16 +99,20 @@ public class LevelDbTemplete {
      * @return
      */
     public Object get(String key) {
+        initLevelDB();
         byte[] val = null;
         try {
             val = db.get(key.getBytes(charset));
         } catch (Exception e) {
             logger.error("levelDB get error", e);
+            closeDB();
             return null;
         }
         if (val == null) {
+            closeDB();
             return null;
         }
+        closeDB();
         return deserializer(val);
     }
 
@@ -113,11 +122,13 @@ public class LevelDbTemplete {
      * @param key
      */
     public void delete(String key) {
+        initLevelDB();
         try {
             db.delete(key.getBytes(charset));
         } catch (Exception e) {
             logger.error("levelDB delete error", e);
         }
+        closeDB();
     }
 
 
@@ -141,7 +152,7 @@ public class LevelDbTemplete {
      * @return
      */
     public List<String> getKeys() {
-
+        initLevelDB();
         List<String> list = new ArrayList<>();
         DBIterator iterator = null;
         try {
@@ -157,6 +168,7 @@ public class LevelDbTemplete {
             if (iterator != null) {
                 try {
                     iterator.close();
+                    closeDB();
                 } catch (IOException e) {
                     logger.error("遍历发生异常", e);
                 }
