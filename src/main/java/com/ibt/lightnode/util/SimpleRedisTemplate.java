@@ -452,7 +452,7 @@ public class SimpleRedisTemplate {
      * @param values 值 可以是多个
      * @return 移除的个数
      */
-    public long setRemove(String key, Object... values) {
+    public long sRemove(String key, Object... values) {
         try {
             Long count = redisTemplate.opsForSet().remove(key, values);
             return count;
@@ -620,7 +620,9 @@ public class SimpleRedisTemplate {
      * 移除N个值为value
      *
      * @param key   键
-     * @param count 移除多少个
+     * @param count count > 0：删除|count|个等于value从头到尾的元素。
+     *              count < 0：删除|count|个等于value从尾到头移动的元素。
+     *              count = 0：删除所有等于的元素value。
      * @param value 值
      * @return 移除的个数
      */
@@ -633,4 +635,71 @@ public class SimpleRedisTemplate {
             return 0;
         }
     }
+
+    /**
+     * ==========================Zset=============================
+     */
+
+    /**
+     * 给有序集合添加元素
+     *
+     * @param key
+     * @param value
+     * @param score 比重
+     * @return
+     */
+    public boolean zAdd(String key, Object value, int score) {
+        return redisTemplate.opsForZSet().add(key, value, score);
+    }
+
+    /**
+     * 删除一个或多个值
+     *
+     * @param key
+     * @param values
+     * @return
+     */
+    public long zRemove(String key, Object... values) {
+        return redisTemplate.opsForZSet().remove(key, values);
+    }
+
+    /**
+     * 查看集合中的个数
+     *
+     * @param key
+     * @return
+     */
+    public long zGetCount(String key) {
+        return redisTemplate.opsForZSet().size(key);
+    }
+
+    /**
+     * 获得指定位置的范围的元素
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public Set zRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().range(key, start, end);
+    }
+
+    public Set zRangeWithScore(String key, long start, long end) {
+        return redisTemplate.opsForZSet().rangeWithScores(key, start, end);
+    }
+
+
+
+    /**
+     * 获得分数范围内的元素
+     * @param key
+     * @param min
+     * @param max
+     * @return
+     */
+    public Set zRangeByScore(String key, int min, int max) {
+        return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+    }
+
 }

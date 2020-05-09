@@ -13,7 +13,7 @@ import java.util.List;
 public class TransactionReceipt {
     private String blockHash;
     private String blockNumber;
-    private byte[] transactionHash;
+    private String transactionHash;
     private String transactionIndex;
     private String from;
     private String to;
@@ -24,6 +24,7 @@ public class TransactionReceipt {
     private ArrayList<Log> logs;
     private byte[] contractAddress;
     private long gasUsed;
+
     public TransactionReceipt() {
     }
 
@@ -43,11 +44,11 @@ public class TransactionReceipt {
         this.blockNumber = blockNumber;
     }
 
-    public byte[] getTransactionHash() {
+    public String getTransactionHash() {
         return transactionHash;
     }
 
-    public void setTransactionHash(byte[] transactionHash) {
+    public void setTransactionHash(String transactionHash) {
         this.transactionHash = transactionHash;
     }
 
@@ -88,7 +89,7 @@ public class TransactionReceipt {
     }
 
     public void setStatus(String status) {
-        this.status = Long.parseLong(status.substring(2,status.length()),16);
+        this.status = Long.parseLong(status.substring(2, status.length()), 16);
     }
 
     public long getCumulativeGasUsed() {
@@ -96,7 +97,7 @@ public class TransactionReceipt {
     }
 
     public void setCumulativeGasUsed(String cumulativeGasUsed) {
-        this.cumulativeGasUsed = Long.parseLong(cumulativeGasUsed.substring(2,cumulativeGasUsed.length()),16);
+        this.cumulativeGasUsed = Long.parseLong(cumulativeGasUsed.substring(2, cumulativeGasUsed.length()), 16);
     }
 
     public byte[] getLogsBloom() {
@@ -120,7 +121,7 @@ public class TransactionReceipt {
     }
 
     public void setContractAddress(String contractAddress) {
-        contractAddress=contractAddress.substring(2);
+        contractAddress = contractAddress.substring(2);
         this.contractAddress = contractAddress.getBytes();
     }
 
@@ -129,6 +130,6 @@ public class TransactionReceipt {
     }
 
     public void setGasUsed(String gasUsed) {
-        this.gasUsed = Long.parseLong(gasUsed.substring(2,gasUsed.length()),16);
+        this.gasUsed = Long.parseLong(gasUsed.substring(2, gasUsed.length()), 16);
     }
 }

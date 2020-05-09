@@ -14,14 +14,12 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SimpleServiceImp implements SimpleService {
-    @Autowired
-    LevelDbTemplete levelDbTemplete;
 
     @Override
     public String getBlockHeight() {
-        levelDbTemplete.initLevelDB();
-        String height= levelDbTemplete.get("currentBlockHeight").toString();
-        levelDbTemplete.closeDB();
+
+        String height= LevelDbTemplete.getInstance().get("currentBlockHeight").toString();
+
         return height;
     }
 }

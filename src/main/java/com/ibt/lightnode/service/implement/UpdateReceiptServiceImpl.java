@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -165,12 +166,14 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
              * sum变量，是对id进行存储的中间变量
              */
             int sum = -1;
+            Map evnetMap=new HashMap();
             for (int i = 0; i < logs.size(); i++) {
                 /**
                  * 第四步：获取log中的合约地址
                  */
                 String contractAddress = eventDataDecodeUtil.binary(logs.get(i).getAddress(), 16);
                 String tc = traceContrantAddress.substring(2).toLowerCase();
+                contractAddress=contractAddress.toLowerCase();
                 /**
                  * 第五步：与配置文件中的合约地址进行比较，相同说明需要存入leveldb，
                  */
@@ -185,37 +188,39 @@ public class UpdateReceiptServiceImpl implements UpdateReceiptService {
                      * }
                      */
                     Map map = eventDataDecodeUtil.decodeReceiptData(logs.get(i).getData());
-
-                    String eventName = (String) map.get("eventName");
-                    int id = (int) map.get("id");
-                    if (id == -1) {
-                        if (sum == -1) {
-                            continue;
-                        } else {
-                            String key = sum + "_" + eventName;
-                            eventDao.setEventData(key, map.get(eventName));
-                            logger.info(key);
-                            logger.info(map.get(eventName).toString());
-                        }
-                    } else {
-                        sum = id;
-                        if (i != 0) {
-                            for (int j = 0; j < i; j++) {
-                                Map map1 = eventDataDecodeUtil.decodeReceiptData(logs.get(j).getData());
-                                String key = sum + "_" + eventName;
-                                eventDao.setEventData(key, map1.get(eventName));
-                                logger.info(key);
-                                logger.info(map.get(eventName).toString());
-                            }
-                        } else {
-                            String key = sum + "_" + eventName;
-                            eventDao.setEventData(key, map.get(eventName));
-                            logger.info(key);
-                            logger.info(map.get(eventName).toString());
-                        }
-                    }
-
+                    logger.info("解析数据："+map);
+//                    String eventName = (String) map.get("eventName");
+//                    int id = (int) map.get("id");
+//                    if (id == -1) {
+//                        if (sum == -1) {
+//                            continue;
+//                        } else {
+//                            String key = sum + "_" + eventName;
+//                            eventDao.setEventData(key, map.get(eventName));
+//                            logger.info(key);
+//                            logger.info(map.get(eventName).toString());
+//                        }
+//                    } else {
+//                        sum = id;
+//                        if (i != 0) {
+//                            for (int j = 0; j < i; j++) {
+//                                Map map1 = eventDataDecodeUtil.decodeReceiptData(logs.get(j).getData());
+//                                String key = sum + "_" + eventName;
+//                                eventDao.setEventData(key, map1.get(eventName));
+//                                logger.info(key);
+//                                logger.info(map.get(eventName).toString());
+//                            }
+//                        } else {
+//                            String key = sum + "_" + eventName;
+//                            eventDao.setEventData(key, map.get(eventName));
+//                            logger.info(key);
+//                            logger.info(map.get(eventName).toString());
+//                        }
+//                    }
+                    String eventName= (String) map.get("eventName");
+                    evnetMap.put(eventName,map.get(eventName));
                 }
+                eventDao.addEventData(evnetMap);
             }
         }
     }

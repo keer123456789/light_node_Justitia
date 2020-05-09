@@ -23,10 +23,11 @@ public class BlockDao {
     SimpleRedisTemplate redisTemplate;
 
     public void setBlockHeight(String height){
+        levelDbTemplete=LevelDbTemplete.getInstance();
         levelDbTemplete.put("currentBlockHeight",height);
     }
 
     public String getBlockHeight(){
-        return (String) levelDbTemplete.get("currentBlockHeight");
+        return (String) LevelDbTemplete.getInstance().get("currentBlockHeight");
     }
 }

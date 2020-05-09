@@ -34,14 +34,31 @@ public class LevelDbTemplete {
 
     private DB db = null;
     @Value("${LevelDB_filePath}")
-    private String dbFolder;
+    private String dbFolder = "db/lightNode";
     private String charset = "utf-8";
+
+    private volatile static LevelDbTemplete uniqueInstance;
+
+    private LevelDbTemplete() {
+    }
+
+    public static LevelDbTemplete getInstance() {
+        if (uniqueInstance == null) {
+            synchronized (LevelDbTemplete.class) {
+                if (uniqueInstance == null) {
+                    uniqueInstance = new LevelDbTemplete();
+                    uniqueInstance.initLevelDB();
+                }
+            }
+        }
+        return uniqueInstance;
+    }
 
     /**
      * 初始化LevelDB
      * 每次使用levelDB前都要调用此方法，无论db是否存在
      */
-    public void initLevelDB() {
+    private void initLevelDB() {
         DBFactory factory = new Iq80DBFactory();
         Options options = new Options();
         options.createIfMissing(true);
@@ -83,13 +100,12 @@ public class LevelDbTemplete {
      */
 
     public void put(String key, Object val) {
-        initLevelDB();
+
         try {
             this.db.put(key.getBytes(charset), this.serializer(val));
         } catch (UnsupportedEncodingException e) {
             logger.error("编码转化异常", e);
         }
-        closeDB();
     }
 
     /**
@@ -99,7 +115,7 @@ public class LevelDbTemplete {
      * @return
      */
     public Object get(String key) {
-        initLevelDB();
+
         byte[] val = null;
         try {
             val = db.get(key.getBytes(charset));
@@ -112,7 +128,7 @@ public class LevelDbTemplete {
             closeDB();
             return null;
         }
-        closeDB();
+
         return deserializer(val);
     }
 
@@ -122,13 +138,13 @@ public class LevelDbTemplete {
      * @param key
      */
     public void delete(String key) {
-        initLevelDB();
+
         try {
             db.delete(key.getBytes(charset));
         } catch (Exception e) {
             logger.error("levelDB delete error", e);
         }
-        closeDB();
+
     }
 
 
@@ -136,14 +152,22 @@ public class LevelDbTemplete {
      * 关闭数据库连接
      * 每次只要调用了initDB方法，就要在最后调用此方法
      */
-    public void closeDB() {
-        if (db != null) {
-            try {
-                db.close();
-            } catch (IOException e) {
-                logger.error("levelDB 关闭异常", e);
+    public static void closeDB() {
+        if(uniqueInstance!=null){
+            synchronized (LevelDbTemplete.class){
+                if(uniqueInstance!=null){
+                    if (uniqueInstance.db != null) {
+                        try {
+                            uniqueInstance.db.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    uniqueInstance=null;
+                }
             }
         }
+
     }
 
     /**
@@ -152,7 +176,7 @@ public class LevelDbTemplete {
      * @return
      */
     public List<String> getKeys() {
-        initLevelDB();
+
         List<String> list = new ArrayList<>();
         DBIterator iterator = null;
         try {
@@ -168,7 +192,7 @@ public class LevelDbTemplete {
             if (iterator != null) {
                 try {
                     iterator.close();
-                    closeDB();
+
                 } catch (IOException e) {
                     logger.error("遍历发生异常", e);
                 }
@@ -176,6 +200,14 @@ public class LevelDbTemplete {
             }
         }
         return list;
+    }
+
+    public static void main(String[] args) {
+        LevelDbTemplete levelDbTemplete = LevelDbTemplete.getInstance();
+        for (String key : levelDbTemplete.getKeys()) {
+            System.out.println(key + ":" + levelDbTemplete.get(key));
+        }
+        LevelDbTemplete.closeDB();
     }
 
 }

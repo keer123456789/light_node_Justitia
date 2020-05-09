@@ -14,12 +14,12 @@ public class Receipt {
     private long status;
     private long cumulativeGasUsed;
     private byte[] logsBloom;
-    private byte[] transactionHash;
+    private String transactionHash;
     private byte[] contractAddress;
     private long gasUsed;
     private List<Log> logs;
 
-    public Receipt(byte[] root, long status, long cumulativeGasUsed, byte[] logsBloom, byte[] transactionHash, byte[] contractAddress, long gasUsed, List<Log> logs) {
+    public Receipt(byte[] root, long status, long cumulativeGasUsed, byte[] logsBloom, String transactionHash, byte[] contractAddress, long gasUsed, List<Log> logs) {
         this.root = root;
         this.status = status;
         this.cumulativeGasUsed = cumulativeGasUsed;
@@ -62,11 +62,11 @@ public class Receipt {
         this.logsBloom = logsBloom;
     }
 
-    public byte[] getTransactionHash() {
+    public String getTransactionHash() {
         return transactionHash;
     }
 
-    public void setTransactionHash(byte[] transactionHash) {
+    public void setTransactionHash(String transactionHash) {
         this.transactionHash = transactionHash;
     }
 

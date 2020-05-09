@@ -179,23 +179,23 @@ public class HttpUtil {
     }
 
     public static void main(String[] args) {
-        HttpUtil httpUtil = new HttpUtil();
-        TransactionReceipt receipt = httpUtil.eth_getTransactionReceipt("0x234fa87fd4a0a3809699f921df23c467591d026c5351965b5980e570dae9b8c4");
-        List logs = receipt.getLogs();
-        Log log = (Log) logs.get(0);
-        String bytes = log.getData();
-
-        final Base64.Decoder decoder = Base64.getDecoder();
-        byte[] event = decoder.decode(bytes);
-        String add = "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B";
-        byte[] function = new byte[32];
-        for (int i = 0; i < 32; i++) {
-            function[i] = event[i + 32 * 2];
-        }
-        String er = binary(function, 16);
+//        HttpUtil httpUtil = new HttpUtil();
+//        TransactionReceipt receipt = httpUtil.eth_getTransactionReceipt("0x448cb4d056cb7f324b647b0c077ef74bff7121d8d09be7b3deeb016ea3e95a24");
+//        List logs = receipt.getLogs();
+//        Log log = (Log) logs.get(0);
+//        String bytes = log.getData();
+//
+//        final Base64.Decoder decoder = Base64.getDecoder();
+//        byte[] event = decoder.decode(bytes);
+//        String add = "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B";
+//        byte[] function = new byte[32];
+//        for (int i = 0; i < 32; i++) {
+//            function[i] = event[i + 32 * 2];
+//        }
+        String a="5I+dftKVcUDg+EGxWKd0Q9S+fTY=";
+        String er = binary(a.getBytes(), 16);
         System.out.println(er);
-        System.out.println(er.length());
-        System.out.println(add);
+
 
 
     }

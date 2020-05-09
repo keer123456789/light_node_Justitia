@@ -48,7 +48,7 @@ public class EventDataDecodeUtil {
             String name = (String) jsonObject.get("name");
             if (type.equals("event") && name.equals(eventName)) {
                 JSONArray inputs = (JSONArray) jsonObject.get("inputs");
-                for (int j = 1; j < inputs.size(); j++) {
+                for (int j = 0; j < inputs.size(); j++) {
 
                     JSONObject input = (JSONObject) inputs.get(j);
                     byte[] valueByte = subBytes(eventData, 32 * j, 32 * j + 31);
@@ -127,7 +127,12 @@ public class EventDataDecodeUtil {
      * @return
      */
     private String findStringValueByIndex(int index, byte[] data) {
-        byte[] stringValueBytes = subBytes(data, index + 32, index + 63);
+        byte[] stringValueBytes;
+        if(index+63>data.length){
+           stringValueBytes = subBytes(data, index + 32, data.length-1);
+        }else{
+            stringValueBytes = subBytes(data, index + 32, index + 63);
+        }
         String res;
         try {
             res = new String(stringValueBytes, "UTF-8");
