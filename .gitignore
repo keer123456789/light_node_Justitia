@@ -26,6 +26,7 @@ db/
 /nbdist/
 /.nb-gradle/
 build/
+.idea/
 
 ### VS Code ###
 .vscode/
