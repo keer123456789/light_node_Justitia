@@ -13,11 +13,11 @@ db/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-#.idea
-#*.iws
-#*.iml
-#*.ipr
+## IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
 
 ### NetBeans ###
 /nbproject/private/
@@ -26,7 +26,7 @@ db/
 /nbdist/
 /.nb-gradle/
 build/
-.idea/
+
 
 ### VS Code ###
 .vscode/
