@@ -21,8 +21,8 @@ public class TraceController {
     @Autowired
     TraceInfoService traceInfoService;
 
-    @RequestMapping(value = "/getTraceInfo{id}",method = RequestMethod.GET)
+    @RequestMapping(value = "/getTraceInfo/{id}",method = RequestMethod.GET)
     public WebResult getTraceInfo(@PathVariable int id){
-        return null;
+        return traceInfoService.getTraceInfoById(id);
     }
 }

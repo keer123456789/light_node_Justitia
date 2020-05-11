@@ -17,4 +17,11 @@ public interface RedisStrategy {
      * @param eventDatas 一笔交易的event 数据
      */
     void put(Map eventDatas);
+
+    /**
+     * 根据id查询
+     * @param id
+     * @return
+     */
+    Map getTraceInfoById(int id);
 }

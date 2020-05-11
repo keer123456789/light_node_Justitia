@@ -162,7 +162,7 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "eventname",
+				"name": "eventName",
 				"type": "string"
 			},
 			{
@@ -209,7 +209,7 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "eventname",
+				"name": "eventName",
 				"type": "string"
 			},
 			{
@@ -256,17 +256,17 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "eventname",
+				"name": "eventName",
 				"type": "string"
 			},
 			{
 				"indexed": false,
-				"name": "From",
+				"name": "from",
 				"type": "address"
 			},
 			{
 				"indexed": false,
-				"name": "To",
+				"name": "to",
 				"type": "address"
 			},
 			{
@@ -286,7 +286,7 @@
 			},
 			{
 				"indexed": false,
-				"name": "Location",
+				"name": "location",
 				"type": "string"
 			},
 			{

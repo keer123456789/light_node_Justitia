@@ -1,8 +1,12 @@
 package com.ibt.lightnode.service.implement;
 
+import com.ibt.lightnode.dao.EventDao;
 import com.ibt.lightnode.pojo.WebResult;
 import com.ibt.lightnode.service.TraceInfoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * @BelongsProject: lightnode
@@ -13,8 +17,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class TraceInfoServiceImpl implements TraceInfoService {
+    @Autowired
+    EventDao eventDao;
+
     @Override
     public WebResult getTraceInfoById(int id) {
-        return null;
+        Map map =eventDao.getEventDataByID(id);
+        WebResult webResult=new WebResult();
+        webResult.setStatus(WebResult.SUCCESS);
+        webResult.setData(map);
+        return webResult;
     }
 }

@@ -34,77 +34,47 @@ public class EventDao {
     @Value("#{'${base_event_names}'.split(',')}")
     private List<String> baseEventNames;
 
-    private Logger logger=LoggerFactory.getLogger(this.getClass());
-
-    public void setEventData(String key, Object data){
-        levelDbTemplete=LevelDbTemplete.getInstance();
-        levelDbTemplete.put(key,data);
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
-        /**
-         * =======================redis===========================
-         */
-        String[] keys=key.split("_");
-        String id=keys[0];
-        String eventName=keys[1];
-        int state=-1;
-        if(baseEventNames.contains(eventName)){
-            Map map= (Map) data;
-            state= (int) map.get("state");
+    /**
+     * 添加事件数据
+     * @param map
+     */
+    public void addEventData(Map map) {
+        int id = -1;
+        int state = -1;
+        Set<String> keys = map.keySet();
+        for (String key : keys) {
+            if (baseEventNames.contains(key)) {
+                Map event = (Map) map.get(key);
+                id = (int) event.get("id");
+                state = (int) event.get("state");
+            }
+        }
+        for (String key : keys) {
+            levelDbTemplete = LevelDbTemplete.getInstance();
+            levelDbTemplete.put(id + "_" + key, map.get(key));
+            logger.info("key:" + id + "_" + key);
+            logger.info("value:" + map.get(key));
         }
 
-        /**
-         * 更新id的当前状态,时间
-         */
-        if(state!=-1){
-            Map keyInfo=new HashMap();
-            keyInfo.put("currentState",state);
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String time =df.format(new Date());
-            keyInfo.put("lastUseTime",time);
-            redisTemplate.set(id+"_info",keyInfo);
+        for (String key : keys) {
+            if (!baseEventNames.contains(key)) {
+                Map event = (Map) map.get(key);
+                event.put("id", id);
+                event.put("state", state);
+                map.put(key, event);
+            }
         }
-
-
-        /**
-         * 将事件数据放入缓存
-         */
-//        Map eventData=new HashMap();
-//        eventData.put(eventName,data);
-//        redisTemplate.sSet(id,eventData);
-        redisTemplate.sSet(id,data);
-
+        redisStrategy.put(map);
     }
 
-    public void addEventData(Map map){
-        int id=-1;
-        int state=-1;
-        Set<String> keys= map.keySet();
-        for(String key:keys){
-            if(baseEventNames.contains(key)){
-                Map event= (Map) map.get(key);
-                id= (int) event.get("id");
-                state=(int)event.get("state");
-            }
-        }
-        for(String key:keys){
-            levelDbTemplete=LevelDbTemplete.getInstance();
-            levelDbTemplete.put(id+"_"+key,map.get(key));
-            logger.info("key:"+id+"_"+key);
-            logger.info("value:"+map.get(key));
-        }
-
-        for(String key:keys){
-            if(!baseEventNames.contains(key)){
-                Map event= (Map) map.get(key);
-                event.put("id",id);
-                event.put("state",state);
-                map.put(key,event);
-            }
-        }
-
-        redisStrategy.put(map);
-
-
+    /**
+     * 根据id查找事件数据
+     * @param id
+     */
+    public Map getEventDataByID(int id){
+        return redisStrategy.getTraceInfoById(id);
     }
 }
